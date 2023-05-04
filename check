@@ -2,6 +2,9 @@
 # Displays common issues with dataset.
 set -eu
 
+# Triple amounts.
+perl -e 'while (@ARGV) { print `wc -l <@{[shift @ARGV]}`, "== ", `wc -l <@{[shift @ARGV]}` }' $@
+
 # Duplicate triples.
 sort $@ |uniq -c |awk '$1 != 1' |wc -l
 echo '== 0'
