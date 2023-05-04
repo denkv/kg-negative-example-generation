@@ -1,0 +1,4 @@
+#!/bin/bash
+set -eu
+PREFIX=${1:-data/FB15k-237/}
+./check ${PREFIX}{test,train,valid}.txt{,-neg}

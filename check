@@ -1,0 +1,7 @@
+#!/bin/bash
+# Displays common issues with dataset.
+set -eu
+
+# Duplicate triples.
+sort $@ |uniq -c |awk '$1 != 1' |wc -l
+echo '== 0'
