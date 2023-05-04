@@ -1,7 +1,47 @@
-#!/bin/bash
-set -eu
-FILES=$(ls "$1-neg-"*)
-PARTS=$(echo "$FILES" |wc -l)
-N=$(expr $(wc -l <"$1") / $PARTS)
-OUT="$1-neg"
-head -q -n"$N" $FILES >"$OUT"
+#!/usr/bin/env python3
+import argparse
+import imp
+import logging
+import sys
+
+read_tsv_triples = imp.load_source('generate', 'generate').read_tsv_triples
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--amount', type=int, help='Stop after that many triples')
+    parser.add_argument('--out', type=argparse.FileType('w'), default='-')
+    parser.add_argument('--exclude', dest='excludes', nargs='*', default=[])
+    parser.add_argument('files', metavar='file', nargs='+', help='Example sets to sample and merge')
+    args = parser.parse_args()
+    logging.info(f'Arguments: {vars(args)}')
+
+    triples = set()
+    amount = 0
+    for exclude in args.excludes:
+        triples |= set(read_tsv_triples(exclude))
+    logging.debug(f'Triples excluded: {len(triples)}')
+
+    sources = [read_tsv_triples(path) for path in args.files]
+    it = iter(sources)
+    while len(sources) != 0 and (args.amount is None or amount < args.amount):
+        try:
+            src = next(it)
+        except StopIteration:
+            it = iter(sources)
+            src = next(it)
+        try:
+            triple = tuple(next(src))
+            if triple not in triples:
+                args.out.write('\t'.join(triple) + '\n')
+                triples.add(triple)
+                amount += 1
+        except StopIteration:
+            sources.remove(src)
+
+    if args.amount is not None and amount < args.amount:
+        logging.warning(f'Was able to generate only {amount} triples, while requested {args.amount}')
+        sys.exit(1)
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+    main()

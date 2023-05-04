@@ -31,7 +31,7 @@ mapping = {
 def read_tsv_triples(path):
     with open(path, 'r') as file:
         for line in tqdm(file, desc=path):
-            yield line.rstrip().split('\t', maxsplit=3)
+            yield tuple(line.rstrip().split('\t', maxsplit=3))
 
 
 def load_all(files):

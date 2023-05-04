@@ -1,0 +1,8 @@
+#!/bin/bash
+set -eu
+PREFIX=${1:-data/FB15k-237/}
+./merge --out ${PREFIX}valid.txt-neg --amount $(wc -l <${PREFIX}valid.txt) ${PREFIX}valid.txt-neg-{domain,domainrange,property,random,range}
+./merge --out ${PREFIX}test.txt-neg --amount $(wc -l <${PREFIX}test.txt) ${PREFIX}test.txt-neg-{domain,domainrange,property,random,range} \
+        --exclude ${PREFIX}valid.txt-neg
+./merge --out ${PREFIX}train.txt-neg --amount $(wc -l <${PREFIX}train.txt) ${PREFIX}train.txt-neg-{domain,domainrange,property,random,range} \
+        --exclude ${PREFIX}test.txt-neg ${PREFIX}valid.txt-neg
